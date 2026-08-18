@@ -36,7 +36,7 @@
             <div class="col-lg-5"><a class="navbar-brand mb-3" href="index.html"><span class="brand-mark">NA</span><span>Nexus Arena</span></a><p class="text-muted-custom pe-lg-5">A student-run university esports community where casual players, competitors and creators level up together.</p></div>
             <div class="col-6 col-lg-2"><div class="footer-title mb-3">Explore</div><ul class="footer-links"><li><a href="tournaments.html">Tournaments</a></li><li><a href="schedule.html">Schedule</a></li><li><a href="teams.html">Teams</a></li><li><a href="rankings.html">Rankings</a></li></ul></div>
             <div class="col-6 col-lg-2"><div class="footer-title mb-3">Club</div><ul class="footer-links"><li><a href="about.html">About us</a></li><li><a href="players.html">Players</a></li><li><a href="contact.html">Membership</a></li><li><a href="contact.html#faq">FAQ</a></li></ul></div>
-            <div class="col-lg-3"><div class="footer-title mb-3">Club room</div><p class="text-muted-custom mb-1">Student Pavilion, Level 2</p><p class="text-muted-custom">Fridays · 7:30–10:30 PM</p><div class="social-links justify-content-start"><a href="https://discord.com/" target="_blank" rel="noopener" aria-label="Discord"><i class="bi bi-discord"></i></a><a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube"></i></a></div></div>
+            <div class="col-lg-3"><div class="footer-title mb-3">Club room</div><p class="text-muted-custom mb-1">Block N, N108</p><p class="text-muted-custom">Fridays · 7:30–10:30 PM</p><div class="social-links justify-content-start"><a href="https://discord.com/" target="_blank" rel="noopener" aria-label="Discord"><i class="bi bi-discord"></i></a><a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube"><i class="bi bi-youtube"></i></a></div></div>
           </div>
           <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between gap-2"><span>© <span data-current-year></span> Nexus Arena E-Sports Club. Student assignment prototype.</span><span>Built with HTML5 · CSS3 · Bootstrap · JavaScript · jQuery</span></div>
         </div>
@@ -78,33 +78,149 @@
   }
 
   function initPlayerViews() {
-    const recent = NexusStorage.getViewedPlayer();
-    if (recent) $("[data-recent-player]").removeClass("d-none").find("strong").text(recent);
+
+    // Get the recently viewed player
+    const recentPlayer = NexusStorage.getViewedPlayer();
+
+    // Show the recently viewed player if there is one
+    if (recentPlayer) {
+
+      $("[data-recent-player]")
+        .removeClass("d-none")
+        .find("strong")
+        .text(recentPlayer);
+    }
+
+
+    // Add click event to every player card
     $(".player-card").on("click keydown", function (event) {
-      if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+
+      // Only allow Enter or Space when using the keyboard
+      if (
+        event.type === "keydown" &&
+        event.key !== "Enter" &&
+        event.key !== " "
+      ) {
+        return;
+      }
+
       event.preventDefault();
+
+
+      // Get the selected player card
       const card = $(this);
+
+
+      // Get player information from the card
       const name = card.data("player-name");
+      const handle = card.data("handle");
+      const game = card.data("game");
+      const role = card.data("role");
+      const bio = card.data("bio");
+      const stat = card.data("stat");
+
+
+      // Save the player as recently viewed
       NexusStorage.rememberViewedPlayer(name);
-      $("#playerModalLabel").text(`${name} · ${card.data("handle")}`);
-      $("#playerModalRole").text(`${card.data("game")} · ${card.data("role")}`);
-      $("#playerModalBio").text(card.data("bio"));
-      $("#playerModalStat").text(card.data("stat"));
-      bootstrap.Modal.getOrCreateInstance(document.getElementById("playerModal")).show();
+
+
+      // Show the recently viewed player
+      $("[data-recent-player]")
+        .removeClass("d-none")
+        .find("strong")
+        .text(name);
+
+
+      // Put player information into the modal
+      $("#playerModalLabel")
+        .text(name + " · " + handle);
+
+      $("#playerModalRole")
+        .text(game + " · " + role);
+
+      $("#playerModalBio")
+        .text(bio);
+
+      $("#playerModalStat")
+        .text(stat);
+
+
+      // Open the player modal
+      const modalElement =
+        document.getElementById("playerModal");
+
+      const modal =
+        bootstrap.Modal.getOrCreateInstance(modalElement);
+
+      modal.show();
+
     });
   }
 
   function initContactForm() {
-    const form = document.getElementById("joinForm");
-    if (!form) return;
+
+    // Find the contact/join form
+    const form =
+      document.getElementById("joinForm");
+
+
+    // Stop if the form does not exist
+    if (!form) {
+      return;
+    }
+
+
+    // Run this when the user submits the form
     form.addEventListener("submit", function (event) {
+
+      // Stop the page from refreshing
       event.preventDefault();
-      if (!form.checkValidity()) { event.stopPropagation(); form.classList.add("was-validated"); return; }
-      const firstName = $("#firstName").val().trim();
-      sessionStorage.setItem("nexus_join_interest", $("#mainGame").val());
-      $("#formToast .toast-body").text(`Thanks, ${firstName}! This demo saved your game interest for this session. A real deployment would send the form to the club committee.`);
-      bootstrap.Toast.getOrCreateInstance(document.getElementById("formToast")).show();
-      form.reset(); form.classList.remove("was-validated");
+
+      // Check whether all required fields are filled
+      if (!form.checkValidity()) {
+        event.stopPropagation();
+        form.classList.add("was-validated");
+        return;
+      }
+
+      // Get the user's first name
+      const firstName =
+        $("#firstName").val().trim();
+
+      // Save the selected game for this session
+      const selectedGame =
+        $("#mainGame").val();
+
+      sessionStorage.setItem(
+        "nexus_join_interest",
+        selectedGame
+      );
+
+      // Create the success message
+      const message =
+        "Thanks, " +
+        firstName +
+        "! We have received your application.";
+
+      // Put the message inside the toast
+      $("#formToast .toast-body")
+        .text(message);
+
+      // Show the success message
+      const toastElement =
+        document.getElementById("formToast");
+
+      const toast =
+        bootstrap.Toast.getOrCreateInstance(
+          toastElement
+        );
+
+      toast.show();
+
+      // Clear the form
+      form.reset();
+
+      form.classList.remove("was-validated");
     });
   }
 
